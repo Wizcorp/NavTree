@@ -414,11 +414,10 @@ NavTree.prototype._transitionNodes = function (from, to, transition) {
 			to.item.emit('moved', to.params);
 
 			window.setTimeout(function () {
-				from.item.emit('closed', from.params);
-				to.item.emit('opened', to.params);
-
 				self._closeNode(from, from.params, function () {
+					from.item.emit('closed', from.params);
 					self._openNode(to);
+					to.item.emit('opened', to.params);
 				});
 			}, 0);
 		});
