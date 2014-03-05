@@ -312,6 +312,7 @@ NavTree.prototype._closeNode = function (node, response, cb) {
 		this.emit('close', node.name);
 
 		if (node.item.close) {
+			// if the supplied close function has 2 arguments, we threat the second argument as a callback function
 			if (node.item.close.length === 2) {
 				return node.item.close(response, closeItemCb);
 			}
@@ -515,6 +516,7 @@ NavTree.prototype.close = function (response) {
 
 	} else {
 		// there was no queued node, so we execute a back() request
+		var self = this;
 
 		this._closeCurrentNode(response, function () {
 			var wentBack = this.back();
