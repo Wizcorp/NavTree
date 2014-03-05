@@ -2,7 +2,7 @@
 	"name": "NavTree",
 	"repo": "Wizcorp/NavTree",
 	"description": "Navigation API",
-	"version": "0.1.1",
+	"version": "0.1.0",
 	"dependencies": {
 		"component/inherit": "*",
 		"Wizcorp/eventemitter": "*"
