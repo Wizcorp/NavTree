@@ -312,7 +312,8 @@ NavTree.prototype._closeNode = function (node, response, cb) {
 		this.emit('close', node.name);
 
 		if (node.item.close) {
-			// if the supplied close function has 2 arguments, we threat the second argument as a callback function
+			// if the supplied close function has 2 arguments, we treat the second argument
+			// as a callback function
 			if (node.item.close.length === 2) {
 				return node.item.close(response, closeItemCb);
 			}
