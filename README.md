@@ -103,9 +103,9 @@ If there are no queued nodes, it will perform a back operation. Calling this met
 The optional parameter in close will be passed to the callback function specified in open.
 The close method on the registered item will also be called, if it exists.
 
-In some cases, we want to finish running the close method on the current item then only calling
+In some cases, we want to finish running the close method of the current item before calling
 the open method of the next item. In this case, we can supply a callback method on the second parameter
-of the close method. The close current item and open next item action will now be asynchronous.
+of the close method of current item. The close current item and open next item action will now be asynchronous.
 
 Calling the method:
 
