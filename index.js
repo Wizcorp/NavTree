@@ -520,19 +520,19 @@ NavTree.prototype.close = function (response) {
 		var self = this;
 
 		this._closeCurrentNode(response, function () {
-			var wentBack = this.back();
+			var wentBack = self.back();
 
 			// drop everything after the current node (if there is no current node, it will just clear all)
 
-			this.stack.clearFuture();
+			self.stack.clearFuture();
 
 			if (!wentBack) {
 				// if there was no node to go back to, the navTree can be considered empty
 
-				if (this.cbCollapse) {
+				if (self.cbCollapse) {
 					// call the collapse callback
 
-					this.cbCollapse();
+					self.cbCollapse();
 				}
 			}
 		});
