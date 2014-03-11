@@ -17,6 +17,7 @@ function NavTreeHistory(bindToNavigator) {
 	this.nodes = [];
 	this.index = -1;
 	this._currentHash = 0;
+	this._bindToNavigator = !!bindToNavigator;
 
 	if (bindToNavigator && isNavigationSet) {
 		return console.warn("The navigator is already bound to a NavTree");
@@ -41,7 +42,6 @@ function NavTreeHistory(bindToNavigator) {
 			self._currentHash = newHash;
 		};
 	}
-
 }
 
 inherit(NavTreeHistory, EventEmitter);
@@ -145,9 +145,11 @@ NavTreeHistory.prototype._getLocationHash = function () {
  * Updates the location hash with the specified string.
  */
 NavTreeHistory.prototype._setLocationHash = function () {
-	this._currentHash = Date.now();
-	this._lockHashUpdate = true;
-	window.location.hash = this._currentHash;
+	if (this._bindToNavigator) {
+		this._currentHash = Date.now();
+		this._lockHashUpdate = true;
+		window.location.hash = this._currentHash;
+	}
 };
 
 
