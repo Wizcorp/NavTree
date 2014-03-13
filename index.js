@@ -201,7 +201,7 @@ function NavTree(options, creationOptions) {
 	this.nodeQueue = [];        // FIFO
 	this.options = options || {};
 	this.creationOptions = creationOptions || {};
-
+	this.openining = false;
 
 	this.stack = new NavTreeHistory(this.options.bindToNavigator);
 
@@ -406,6 +406,7 @@ NavTree.prototype._transitionNodes = function (from, to, transition) {
 			return self._closeNode(from, from.params, function () {
 				from.item.emit('closed', from.params);
 				self._openNode(to);
+				self.openining = false;
 				to.item.emit('opened', to.params);
 			});
 		}
@@ -437,6 +438,11 @@ NavTree.prototype._transitionNodes = function (from, to, transition) {
  */
 
 NavTree.prototype.open = function (name, params, transition, cb) {
+	if (this.openining) {
+		return false;
+	}
+
+	this.openining = true;
 	var from = this.stack.current();
 	var to = this._createNode(name, params, cb);
 
