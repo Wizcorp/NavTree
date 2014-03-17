@@ -2,11 +2,11 @@
 
 ## vCurrent
 
-### 
+### Implemented transition locking
 This is solving the issue when views are opened at the same time, generally due to finger mashing.
 There was a very long discussion about it and we decided to implement locking for now, where by if a
 view is opening and still mid transition, another view open will be ignored. We looked at single
-queue and mutli-queue states as well, but decided to go with a simple solution for the time being.
+queue and multi-queue states as well, but decided to go with a simple solution for the time being.
 
 The only instances we saw where a developer would want multiple views open at the same time, was if
 a view open were to happen in async, i.e. you got a notification from the server which instructed
@@ -18,13 +18,13 @@ opening argument a tad mute. So we opted to not accommodate this just yet.
 You can use the return values to know whether or not your view is going to open. We only return
 false when the view is not set to transition in (which means will not open, as even an empty
 transition is an immediate open)
-```
+```javascript
 if (!navTree.open('yourView')) {
     return;
 }
 
-# Thing you will do in the same tick before open, but depend on the view being open
-# This is a rare-case, and unlikely to be used, but decided to do this properly so put it in there
+// Thing you will do in the same tick before open, but depend on the view being open
+// This is a rare-case, and unlikely to be used, but decided to do this properly so put it in there
 ```
 
 ## v0.2.2
