@@ -1,6 +1,6 @@
 # Release history
 
-## vCurrent
+## v0.2.3
 
 ### Implemented transition locking
 This is solving the issue when views are opened at the same time, generally due to finger mashing.
