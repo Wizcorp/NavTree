@@ -74,6 +74,10 @@ When the open function is called, the newItemElement will be displayed and recei
 event. The open function should only be called on views which have already been registered with
 the tree. **It is an error to try and open an item that has not been properly registered.**
 
+Further to this, only a single view can be opened as the same time, as such there is a locking
+mechanism in place to prevent this. If a view should fail to open, the open function will return
+`false`.
+
 Calling the method:
 
 ```javascript

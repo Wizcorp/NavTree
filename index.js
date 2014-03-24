@@ -201,7 +201,7 @@ function NavTree(options, creationOptions) {
 	this.nodeQueue = [];        // FIFO
 	this.options = options || {};
 	this.creationOptions = creationOptions || {};
-
+	this.opening = false;
 
 	this.stack = new NavTreeHistory(this.options.bindToNavigator);
 
@@ -373,6 +373,7 @@ NavTree.prototype._openNode = function (node) {
 		this.emit('open', node.name, node.params);
 	}
 
+	this.opening = false;
 	return node;
 };
 
@@ -437,13 +438,22 @@ NavTree.prototype._transitionNodes = function (from, to, transition) {
  */
 
 NavTree.prototype.open = function (name, params, transition, cb) {
+	if (this.opening) {
+		return false;
+	}
+
+	this.opening = true;
 	var from = this.stack.current();
 	var to = this._createNode(name, params, cb);
 
 	if (to) {
 		this._transitionNodes(from, to, transition);
 		this.stack.add(to);
+		return true;
 	}
+
+	this.opening = false;
+	return false;
 };
 
 
@@ -467,19 +477,31 @@ NavTree.prototype.enqueue = function (name, params, transition, cb) {
 NavTree.prototype.replace = function (name, params, transition, cb) {
 	// like open, but replaces the current node in the history stack
 	// ignores the queue
+	if (this.opening) {
+		return false;
+	}
 
+	this.opening = true;
 	var from = this.stack.current();
 	var to = this._createNode(name, params, cb);
 
 	if (to) {
 		this._transitionNodes(from, to, transition);
 		this.stack.replace(to);
-
+		return true;
 	}
+
+	this.opening = false;
+	return false;
 };
 
 
 NavTree.prototype.back = function (transition) {
+	if (this.opening) {
+		return false;
+	}
+
+	this.opening = true;
 	var from = this.stack.current();
 	var to = this.stack.back();
 
@@ -488,11 +510,17 @@ NavTree.prototype.back = function (transition) {
 		return true;
 	}
 
+	this.opening = false;
 	return false;
 };
 
 
 NavTree.prototype.forward = function (transition) {
+	if (this.opening) {
+		return false;
+	}
+
+	this.opening = true;
 	var from = this.stack.current();
 	var to = this.stack.forward();
 
@@ -501,6 +529,7 @@ NavTree.prototype.forward = function (transition) {
 		return true;
 	}
 
+	this.opening = false;
 	return false;
 };
 
