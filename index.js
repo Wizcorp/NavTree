@@ -331,7 +331,7 @@ NavTree.prototype._closeNode = function (node, response, cb) {
 
 
 NavTree.prototype._closeCurrentNode = function (response, cb) {
-	var currentItem = this.stack.current()
+	var currentItem = this.stack.current();
 	currentItem.emit('closing', currentItem.params);
 	this._closeNode(currentItem, response, function () {
 		currentItem.emit('closed', currentItem.params);
@@ -554,11 +554,11 @@ NavTree.prototype.close = function (response) {
 	} else {
 		// there was no queued node, so we execute a back() request
 
-		var wentBack = self.back();
+		var wentBack = this.back();
 
 		// drop everything after the current node (if there is no current node, it will just clear all)
 
-		self.stack.clearFuture();
+		this.stack.clearFuture();
 
 		if (!wentBack) {
 			var self = this;
