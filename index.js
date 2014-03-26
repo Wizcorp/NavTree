@@ -333,7 +333,7 @@ NavTree.prototype._closeNode = function (node, response, cb) {
 NavTree.prototype._closeCurrentNode = function (response, cb) {
 	var currentItem = this.stack.current()
 	currentItem.emit('closing', currentItem.params);
-	this._closeNode(this.stack.current(), response, function () {
+	this._closeNode(currentItem, response, function () {
 		currentItem.emit('closed', currentItem.params);
 		cb();
 	});
