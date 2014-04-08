@@ -331,7 +331,12 @@ NavTree.prototype._closeNode = function (node, response, cb) {
 
 
 NavTree.prototype._closeCurrentNode = function (response, cb) {
-	this._closeNode(this.stack.current(), response, cb);
+	var currentItem = this.stack.current();
+	currentItem.emit('closing', currentItem.params);
+	this._closeNode(currentItem, response, function () {
+		currentItem.emit('closed', currentItem.params);
+		cb();
+	});
 };
 
 
@@ -548,25 +553,27 @@ NavTree.prototype.close = function (response) {
 
 	} else {
 		// there was no queued node, so we execute a back() request
-		var self = this;
 
-		this._closeCurrentNode(response, function () {
-			var wentBack = self.back();
+		var wentBack = this.back();
 
-			// drop everything after the current node (if there is no current node, it will just clear all)
+		// drop everything after the current node (if there is no current node, it will just clear all)
 
-			self.stack.clearFuture();
+		this.stack.clearFuture();
 
-			if (!wentBack) {
-				// if there was no node to go back to, the navTree can be considered empty
+		if (!wentBack) {
+			var self = this;
+
+			// if there was no node to go back to, the navTree can be considered empty
+
+			this._closeCurrentNode(response, function () {
 
 				if (self.cbCollapse) {
 					// call the collapse callback
 
 					self.cbCollapse();
 				}
-			}
-		});
+			});
+		}
 	}
 };
 
