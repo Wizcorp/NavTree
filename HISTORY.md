@@ -1,5 +1,11 @@
 # Release history
 
+## v0.2.4
+
+### Let me know when you're gone
+NavTree#close should now emit the 'closing' and 'closed' events on the item.
+
+
 ## v0.2.3
 
 ### Implemented transition locking

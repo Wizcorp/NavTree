@@ -332,6 +332,9 @@ NavTree.prototype._closeNode = function (node, response, cb) {
 
 NavTree.prototype._closeCurrentNode = function (response, cb) {
 	var currentItem = this.stack.current();
+	if (!currentItem) {
+		return cb();
+	}
 	currentItem.emit('closing', currentItem.params);
 	this._closeNode(currentItem, response, function () {
 		currentItem.emit('closed', currentItem.params);
