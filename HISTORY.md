@@ -1,5 +1,11 @@
 # Release history
 
+## v0.2.5
+
+### Dependencies update
+- From `component/inherit` to `Wizcorp/util` v0.1.0
+- From `Wizcorp/eventemitter` to `Wizcorp/events` v0.1.2
+
 ## v0.2.4
 
 ### Let me know when you're gone

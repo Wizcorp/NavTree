@@ -1,5 +1,5 @@
-var inherit = require('inherit');
-var EventEmitter = require('EventEmitter');
+var inherits = require('util').inherits;
+var EventEmitter = require('events').EventEmitter;
 
 var STATE_CLOSED = 0;
 var STATE_PREPARED = 1;
@@ -44,7 +44,7 @@ function NavTreeHistory(bindToNavigator) {
 	}
 }
 
-inherit(NavTreeHistory, EventEmitter);
+inherits(NavTreeHistory, EventEmitter);
 
 NavTreeHistory.prototype._moveTo = function (index) {
 	this.index = index;
@@ -220,7 +220,7 @@ function NavTree(options, creationOptions) {
 }
 
 
-inherit(NavTree, EventEmitter);
+inherits(NavTree, EventEmitter);
 module.exports = NavTree;
 
 
