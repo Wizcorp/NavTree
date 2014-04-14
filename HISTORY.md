@@ -1,5 +1,15 @@
 # Release history
 
+## v0.2.6
+
+### The history is in the past
+Fixed the part where `#back` was changing the index when it was not going back.
+Because of history change from `#back` the `#close` method couldn't close the item when alone in the stack.
+
+### Call me back, but give me the correct info
+The `#open` method can take a callback parameter but the arguments sent was not coming from the `#close` method.
+
+
 ## v0.2.5
 
 ### Dependencies update

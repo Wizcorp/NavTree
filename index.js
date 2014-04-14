@@ -295,12 +295,14 @@ NavTree.prototype._createItem = function (name) {
 };
 
 
-NavTree.prototype._closeNode = function (node, response, cb) {
+NavTree.prototype._closeNode = function (node, cb) {
+	var self = this;
 	function closeItemCb() {
 		node.state = STATE_CLOSED;
 
 		if (node.closeCb) {
-			node.closeCb(response);
+			node.closeCb(self._response);
+			self._response = null;
 			node.closeCb = null;
 		}
 
@@ -317,10 +319,10 @@ NavTree.prototype._closeNode = function (node, response, cb) {
 			// if the supplied close function has 2 arguments, we treat the second argument
 			// as a callback function
 			if (node.item.close.length === 2) {
-				return node.item.close(response, closeItemCb);
+				return node.item.close(node.item.params, closeItemCb);
 			}
 
-			node.item.close(response);
+			node.item.close(node.item.params);
 		}
 
 		return closeItemCb();
@@ -330,14 +332,14 @@ NavTree.prototype._closeNode = function (node, response, cb) {
 };
 
 
-NavTree.prototype._closeCurrentNode = function (response, cb) {
-	var currentItem = this.stack.current();
-	if (!currentItem) {
+NavTree.prototype._closeCurrentNode = function (cb) {
+	var currentNode = this.stack.current();
+	if (!currentNode || !currentNode.item) {
 		return cb();
 	}
-	currentItem.emit('closing', currentItem.params);
-	this._closeNode(currentItem, response, function () {
-		currentItem.emit('closed', currentItem.params);
+	currentNode.item.emit('closing', currentNode.params);
+	this._closeNode(currentNode, function () {
+		currentNode.item.emit('closed', currentNode.params);
 		cb();
 	});
 };
@@ -409,14 +411,17 @@ NavTree.prototype._transitionNodes = function (from, to, transition) {
 	from.item.emit('closing', from.params);
 	to.item.emit('opening', to.params);
 
+	function closeNode() {
+		self._closeNode(from, function () {
+			from.item.emit('closed', from.params);
+			self._openNode(to);
+			to.item.emit('opened', to.params);
+		});
+	}
 
 	return window.setTimeout(function () {
 		if (!transition) {
-			return self._closeNode(from, from.params, function () {
-				from.item.emit('closed', from.params);
-				self._openNode(to);
-				to.item.emit('opened', to.params);
-			});
+			return closeNode();
 		}
 
 		from.item.emit('moving');
@@ -425,14 +430,7 @@ NavTree.prototype._transitionNodes = function (from, to, transition) {
 		transition(from.item, to.item, function () {
 			from.item.emit('moved', from.params);
 			to.item.emit('moved', to.params);
-
-			window.setTimeout(function () {
-				self._closeNode(from, from.params, function () {
-					from.item.emit('closed', from.params);
-					self._openNode(to);
-					to.item.emit('opened', to.params);
-				});
-			}, 0);
+			window.setTimeout(closeNode, 0);
 		});
 
 	}, 0);
@@ -516,6 +514,8 @@ NavTree.prototype.back = function (transition) {
 	if (to) {
 		this._transitionNodes(from, to, transition);
 		return true;
+	} else {
+		this.stack.forward();
 	}
 
 	this.opening = false;
@@ -557,6 +557,7 @@ NavTree.prototype.close = function (response) {
 	} else {
 		// there was no queued node, so we execute a back() request
 
+		this._response = response;
 		var wentBack = this.back();
 
 		// drop everything after the current node (if there is no current node, it will just clear all)
@@ -568,12 +569,13 @@ NavTree.prototype.close = function (response) {
 
 			// if there was no node to go back to, the navTree can be considered empty
 
-			this._closeCurrentNode(response, function () {
+			this._closeCurrentNode(function () {
+				self.stack.clear();
 
 				if (self.cbCollapse) {
 					// call the collapse callback
 
-					self.cbCollapse();
+					self.cbCollapse(response);
 				}
 			});
 		}
