@@ -335,7 +335,6 @@ NavTree.prototype._closeNode = function (node, cb) {
 	}
 
 	return closeItemCb();
-
 };
 
 
@@ -522,6 +521,8 @@ NavTree.prototype.back = function (transition) {
 		this._transitionNodes(from, to, transition);
 		this._opening = false;
 		return true;
+	} else {
+		this.stack.forward();
 	}
 
 	this._stack.forward();
