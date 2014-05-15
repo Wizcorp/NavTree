@@ -2,7 +2,7 @@
 	"name": "NavTree",
 	"repo": "Wizcorp/NavTree",
 	"description": "Navigation API",
-	"version": "0.2.6",
+	"version": "0.3.0",
 	"dependencies": {
 		"Wizcorp/util": "0.1.0",
 		"Wizcorp/events": "0.1.2"

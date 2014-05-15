@@ -1,6 +1,6 @@
 # Release history
 
-## vNext
+## v0.3.0
 
 ### Saving private Ryan, and the others
 Added an underscore in front of private variable to remove confusion.

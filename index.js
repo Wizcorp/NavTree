@@ -522,7 +522,7 @@ NavTree.prototype.back = function (transition) {
 		this._opening = false;
 		return true;
 	} else {
-		this.stack.forward();
+		this._stack.forward();
 	}
 
 	this._stack.forward();
