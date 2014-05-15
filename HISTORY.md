@@ -1,5 +1,18 @@
 # Release history
 
+## vNext
+
+### Saving private Ryan, and the others
+Added an underscore in front of private variable to remove confusion.
+
+### Something seems opened
+Added the method `getOpenedItem` to get the current opened item.
+:warning: It will return `undefined` if none.
+
+### Didn't you tell me you were closed
+The `'close'` event is now called when the item is really closed
+
+
 ## v0.2.6
 
 ### The history is in the past
