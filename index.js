@@ -299,13 +299,13 @@ NavTree.prototype._closeNode = function (node, cb) {
 	var self = this;
 	function closeItemCb() {
 		node.state = STATE_CLOSED;
+		self.emit('close', node.name);
 
 		if (node.closeCb) {
 			node.closeCb(self._response);
 			self._response = undefined;
 			node.closeCb = null;
 		}
-		self.emit('close', node.name);
 		cb();
 	}
 
@@ -322,19 +322,6 @@ NavTree.prototype._closeNode = function (node, cb) {
 	return closeItemCb();
 };
 
-
-NavTree.prototype._closeCurrentNode = function (cb) {
-	var currentNode = this._stack.current();
-	if (!currentNode || !currentNode.item) {
-		return cb();
-	}
-	this._stack.clear();
-	currentNode.item.emit('closing', currentNode.params);
-	this._closeNode(currentNode, function () {
-		currentNode.item.emit('closed', currentNode.params);
-		cb();
-	});
-};
 
 
 NavTree.prototype._openNode = function (node) {
