@@ -222,21 +222,6 @@ function NavTree(options, creationOptions) {
 inherits(NavTree, EventEmitter);
 module.exports = NavTree;
 
-
-NavTree.prototype.branch = function (creationOptions, cbCollapse) {
-	// create a new NavTree
-
-	var subTree = new NavTree(this._options, creationOptions);
-
-	// give the new tree access to the same items that the source tree has access to
-
-	subTree._tree = this._tree;
-	subTree.cbCollapse = cbCollapse;
-
-	return subTree;
-};
-
-
 NavTree.prototype.register = function (name, item, options) {
 	this._tree[name] = item;
 	if (item.hasOwnProperty('navId')) {
@@ -343,6 +328,7 @@ NavTree.prototype._closeCurrentNode = function (cb) {
 	if (!currentNode || !currentNode.item) {
 		return cb();
 	}
+	this._stack.clear();
 	currentNode.item.emit('closing', currentNode.params);
 	this._closeNode(currentNode, function () {
 		currentNode.item.emit('closed', currentNode.params);
@@ -572,22 +558,27 @@ NavTree.prototype.close = function (response) {
 
 		this._stack.clearFuture();
 
-		if (!wentBack) {
-			var self = this;
 
-			// if there was no node to go back to, the navTree can be considered empty
-
-			this._closeCurrentNode(function () {
-				self._stack.clear();
-
-				if (self.cbCollapse) {
-					// call the collapse callback
-
-					self.cbCollapse(response);
-				}
-			});
+		if (wentBack) {
+			return;
 		}
+
+		// if there was no node to go back to, the navTree can be considered empty
+
+		var currentNode = this._stack.current();
+
+		if (!currentNode || !currentNode.item) {
+			return;
+		}
+
+		this._stack.clear();
+
+		currentNode.item.emit('closing', currentNode.params);
+		this._closeNode(currentNode, function () {
+			currentNode.item.emit('closed', currentNode.params);
+		});
 	}
+
 };
 
 
