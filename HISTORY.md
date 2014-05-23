@@ -1,5 +1,16 @@
 # Release history
 
+## v0.4.0
+
+### The branch has been cut
+The `branch` method no longer exist. Sadly for it, not sure it ever been useful in the first place.
+It might grow back again in the future if needed, but it will grow better and stronger.
+
+### Last item standing
+Some refactoring has been done when calling `close` in a NavTree with only one item.
+Callbacks and events should now be done in the expected order.
+
+
 ## v0.3.0
 
 ### Saving private Ryan, and the others

@@ -133,18 +133,6 @@ Calling the method:
 var someItem = navTree.getItem(tagName);
 ```
 
-#### branch
-
-This function can be called to create a sub-tree under an existing NavTree. The use case for
-creating a branch, is creating a group of logically connected items. The closeCallback function
-is ran when the close method is called.
-
-Calling the method:
-
-```javascript
-var newNavTree = navTree.branch(creationOptions, closeCallback)
-```
-
 #### back
 
 The back method will return the display to the previous item, if one exists. The method
