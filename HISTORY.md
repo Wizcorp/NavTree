@@ -1,5 +1,12 @@
 # Release history
 
+## v0.4.1
+
+### Put me on the tree immediately
+No need to when for the 'create' event to be able to call `getNavTree`.
+As soon as you register your item, it will be able to call it.
+
+
 ## v0.4.0
 
 ### The branch has been cut

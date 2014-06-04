@@ -223,12 +223,19 @@ inherits(NavTree, EventEmitter);
 module.exports = NavTree;
 
 NavTree.prototype.register = function (name, item, options) {
+	if (this._tree[name]) {
+		return console.error('The name', name, 'is already used on the NavTree');
+	}
+
 	this._tree[name] = item;
 	if (item.hasOwnProperty('navId')) {
 		console.warn('The property `navId` already exist on the item');
 	} else {
 		item.navId = name;
 	}
+
+	this.rebindItem(item);
+
 	options = options || {};
 	if ((this._options.createOnRegister && options.create !== false) || options.create) {
 		this._createItem(name);
@@ -280,7 +287,6 @@ NavTree.prototype.rebindItem = function (item) {
 
 NavTree.prototype._createItem = function (name) {
 	var item = this._tree[name];
-	this.rebindItem(item);
 
 	if (item.create) {
 		item.create(this._creationOptions, name);
