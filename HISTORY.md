@@ -1,5 +1,11 @@
 # Release history
 
+## v0.4.2
+
+### Please call me back
+The close callback passed when enqueueing is now triggered once the view is closed.
+
+
 ## v0.4.1
 
 ### Put me on the tree immediately

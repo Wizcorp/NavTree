@@ -539,7 +539,7 @@ NavTree.prototype.close = function (response) {
 
 	if (queue) {
 
-		this.replace(queue.node.name, queue.node.params, queue.transition);
+		this.replace(queue.node.name, queue.node.params, queue.transition, queue.node.closeCb);
 
 	} else {
 		// there was no queued node, so we execute a back() request
