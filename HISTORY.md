@@ -1,5 +1,52 @@
 # Release history
 
+## v0.4.1
+
+### Put me on the tree immediately
+No need to when for the 'create' event to be able to call `getNavTree`.
+As soon as you register your item, it will be able to call it.
+
+
+## v0.4.0
+
+### The branch has been cut
+The `branch` method no longer exist. Sadly for it, not sure it ever been useful in the first place.
+It might grow back again in the future if needed, but it will grow better and stronger.
+
+### Last item standing
+Some refactoring has been done when calling `close` in a NavTree with only one item.
+Callbacks and events should now be done in the expected order.
+
+
+## v0.3.0
+
+### Saving private Ryan, and the others
+Added an underscore in front of private variable to remove confusion.
+
+### Something seems opened
+Added the method `getOpenedItem` to get the current opened item.
+:warning: It will return `undefined` if none.
+
+### Didn't you tell me you were closed
+The `'close'` event is now called when the item is really closed
+
+
+## v0.2.6
+
+### The history is in the past
+Fixed the part where `#back` was changing the index when it was not going back.
+Because of history change from `#back` the `#close` method couldn't close the item when alone in the stack.
+
+### Call me back, but give me the correct info
+The `#open` method can take a callback parameter but the arguments sent was not coming from the `#close` method.
+
+
+## v0.2.5
+
+### Dependencies update
+- From `component/inherit` to `Wizcorp/util` v0.1.0
+- From `Wizcorp/eventemitter` to `Wizcorp/events` v0.1.2
+
 ## v0.2.4
 
 ### Let me know when you're gone

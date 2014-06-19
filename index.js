@@ -1,5 +1,5 @@
-var inherit = require('inherit');
-var EventEmitter = require('EventEmitter');
+var inherits = require('util').inherits;
+var EventEmitter = require('events').EventEmitter;
 
 var STATE_CLOSED = 0;
 var STATE_PREPARED = 1;
@@ -14,8 +14,8 @@ function NavTreeHistory(bindToNavigator) {
 	EventEmitter.call(this);
 	var self = this;
 
-	this.nodes = [];
-	this.index = -1;
+	this._nodes = [];
+	this._index = -1;
 	this._currentHash = 0;
 	this._bindToNavigator = !!bindToNavigator;
 
@@ -44,34 +44,34 @@ function NavTreeHistory(bindToNavigator) {
 	}
 }
 
-inherit(NavTreeHistory, EventEmitter);
+inherits(NavTreeHistory, EventEmitter);
 
 NavTreeHistory.prototype._moveTo = function (index) {
-	this.index = index;
-	this.emit('move', this.index, this.nodes[this.index]);
+	this._index = index;
+	this.emit('move', this._index, this._nodes[this._index]);
 };
 
 
 NavTreeHistory.prototype.current = function () {
-	return this.nodes[this.index];	// undefined if the list is empty
+	return this._nodes[this._index];	// undefined if the list is empty
 };
 
 
 NavTreeHistory.prototype.isEmpty = function () {
-	return this.nodes.length === 0;
+	return this._nodes.length === 0;
 };
 
 
 NavTreeHistory.prototype.clear = function () {
-	this.nodes = [];
+	this._nodes = [];
 	this._moveTo(-1);
 	this._currentHash = 0;
 };
 
 
 NavTreeHistory.prototype.clearPast = function () {
-	if (this.index > 0) {
-		this.nodes.splice(0, this.index);
+	if (this._index > 0) {
+		this._nodes.splice(0, this._index);
 		this._moveTo(0);
 		this._currentHash = 0;
 	}
@@ -79,16 +79,16 @@ NavTreeHistory.prototype.clearPast = function () {
 
 
 NavTreeHistory.prototype.clearFuture = function () {
-	this.nodes.splice(this.index + 1);
+	this._nodes.splice(this._index + 1);
 	this._currentHash = Date.now();
 };
 
 
 NavTreeHistory.prototype.resetToCurrent = function () {
-	var node = this.nodes[this.index];
+	var node = this._nodes[this._index];
 
 	if (node) {
-		this.nodes = [node];
+		this._nodes = [node];
 		this._moveTo(0);
 	} else {
 		this.clear();
@@ -98,11 +98,11 @@ NavTreeHistory.prototype.resetToCurrent = function () {
 
 
 NavTreeHistory.prototype.add = function (node) {
-	var index = this.index + 1;
+	var index = this._index + 1;
 
 	// drop all nodes starting at the new index, and add the node to the end
 
-	this.nodes.splice(index, this.nodes.length, node);
+	this._nodes.splice(index, this._nodes.length, node);
 
 	// increment the index
 
@@ -112,7 +112,7 @@ NavTreeHistory.prototype.add = function (node) {
 
 
 NavTreeHistory.prototype.replace = function (node, protectFuture) {
-	var index = this.index;
+	var index = this._index;
 
 	if (index < 0) {
 		// if there were no elements before, we want to write to index 0
@@ -121,11 +121,11 @@ NavTreeHistory.prototype.replace = function (node, protectFuture) {
 	}
 
 	if (protectFuture) {
-		this.nodes[index] = node;
+		this._nodes[index] = node;
 	} else {
 		// drop all nodes starting at index, and add the node to the end
 
-		this.nodes.splice(index, this.nodes.length, node);
+		this._nodes.splice(index, this._nodes.length, node);
 	}
 
 	this._moveTo(index);
@@ -153,11 +153,9 @@ NavTreeHistory.prototype._setLocationHash = function () {
 };
 
 
-
-
 NavTreeHistory.prototype.back = function () {
-	var index = this.index - 1;
-	var node = this.nodes[index];
+	var index = this._index - 1;
+	var node = this._nodes[index];
 
 	if (index >= -1) {
 		this._moveTo(index);
@@ -172,8 +170,8 @@ NavTreeHistory.prototype.back = function () {
 
 
 NavTreeHistory.prototype.forward = function () {
-	var index = this.index + 1;
-	var node = this.nodes[index];
+	var index = this._index + 1;
+	var node = this._nodes[index];
 
 	if (node) {
 		this._moveTo(index);
@@ -197,63 +195,67 @@ function NavTree(options, creationOptions) {
 	EventEmitter.call(this);
 
 	var self = this;
-	this.tree = {};             // collection of objects to which we can navigate, indexed by name
-	this.nodeQueue = [];        // FIFO
-	this.options = options || {};
-	this.creationOptions = creationOptions || {};
-	this.opening = false;
+	this._tree = {};             // collection of objects to which we can navigate, indexed by name
+	this._nodeQueue = [];        // FIFO
+	this._options = options || {};
+	this._creationOptions = creationOptions || {};
+	this._opening = false;
+	this._response = undefined;
 
-	this.stack = new NavTreeHistory(this.options.bindToNavigator);
+	this._stack = new NavTreeHistory(this._options.bindToNavigator);
 
-	if (!this.options.hasOwnProperty('createOnRegister')) {
-		this.options.createOnRegister = false;
+	if (!this._options.hasOwnProperty('createOnRegister')) {
+		this._options.createOnRegister = false;
 	}
 
-	this.stack.on('forward', function () {
+	this._stack.on('forward', function () {
 		self.forward();
 	});
 
-	this.stack.on('backward', function () {
+	this._stack.on('backward', function () {
 		self.back();
 	});
 
 }
 
 
-inherit(NavTree, EventEmitter);
+inherits(NavTree, EventEmitter);
 module.exports = NavTree;
 
-
-NavTree.prototype.branch = function (creationOptions, cbCollapse) {
-	// create a new NavTree
-
-	var subTree = new NavTree(this.options, creationOptions);
-
-	// give the new tree access to the same items that the source tree has access to
-
-	subTree.tree = this.tree;
-	subTree.cbCollapse = cbCollapse;
-
-	return subTree;
-};
-
-
 NavTree.prototype.register = function (name, item, options) {
-	this.tree[name] = item;
+	if (this._tree[name]) {
+		return console.error('The name', name, 'is already used on the NavTree');
+	}
+
+	this._tree[name] = item;
+	if (item.hasOwnProperty('navId')) {
+		console.warn('The property `navId` already exist on the item');
+	} else {
+		item.navId = name;
+	}
+
+	this.rebindItem(item);
+
 	options = options || {};
-	if ((this.options.createOnRegister && options.create !== false) || options.create) {
+	if ((this._options.createOnRegister && options.create !== false) || options.create) {
 		this._createItem(name);
 	}
 };
 
 
 NavTree.prototype.getItem = function (name) {
-	return this.tree[name];
+	return this._tree[name];
+};
+
+
+NavTree.prototype.getOpenedItem = function () {
+	var current = this._stack.current();
+	return current && current.item;
 };
 
 
 NavTree.prototype._createNode = function (name, params, closeCb) {
-	var item = this.tree[name];
+	var item = this._tree[name];
 
 	if (!item) {
 		console.error('NavTree item', name, 'not found.');
@@ -284,65 +286,48 @@ NavTree.prototype.rebindItem = function (item) {
 
 
 NavTree.prototype._createItem = function (name) {
-	var item = this.tree[name];
-	this.rebindItem(item);
+	var item = this._tree[name];
 
 	if (item.create) {
-		item.create(this.creationOptions, name);
+		item.create(this._creationOptions, name);
 	}
 
 	item._isCreated = true;
 };
 
 
-NavTree.prototype._closeNode = function (node, response, cb) {
-	function closeItemCb() {
-		node.state = STATE_CLOSED;
-
-		if (node.closeCb) {
-			node.closeCb(response);
-			node.closeCb = null;
-		}
-
-		cb();
-	}
-
-
-	if (node && node.state !== STATE_CLOSED) {
+NavTree.prototype._closeNode = function (node, cb) {
+	if (!node || node.state === STATE_CLOSED) {
 		// only non-closed nodes can be closed
-
-		this.emit('close', node.name);
-
-		if (node.item.close) {
-			// if the supplied close function has 2 arguments, we treat the second argument
-			// as a callback function
-			if (node.item.close.length === 2) {
-				return node.item.close(response, closeItemCb);
-			}
-
-			node.item.close(response);
-		}
-
-		return closeItemCb();
-	}
-
-	cb();
-};
-
-
-NavTree.prototype._closeCurrentNode = function (response, cb) {
-	var currentItem = this.stack.current();
-
-	if (!currentItem) {
 		return cb();
 	}
 
-	currentItem.emit('closing', currentItem.params);
-	this._closeNode(currentItem, response, function () {
-		currentItem.emit('closed', currentItem.params);
+	var self = this;
+	function closeItemCb() {
+		node.state = STATE_CLOSED;
+		self.emit('close', node.name);
+
+		if (node.closeCb) {
+			node.closeCb(self._response);
+			self._response = undefined;
+			node.closeCb = null;
+		}
 		cb();
-	});
+	}
+
+	if (node.item.close) {
+		// if the supplied close function has 2 arguments, we treat the second argument
+		// as a callback function
+		if (node.item.close.length === 2) {
+			return node.item.close(node.item.params, closeItemCb);
+		}
+
+		node.item.close(node.item.params);
+	}
+
+	return closeItemCb();
 };
+
 
 
 NavTree.prototype._openNode = function (node) {
@@ -367,7 +352,7 @@ NavTree.prototype._openNode = function (node) {
 
 		node.state = STATE_PREPARED;
 
-		this.nodeQueue.unshift(node);
+		this._nodeQueue.unshift(node);
 
 		node = this._openNode(replacementNode);
 
@@ -383,7 +368,7 @@ NavTree.prototype._openNode = function (node) {
 		this.emit('open', node.name, node.params);
 	}
 
-	this.opening = false;
+	this._opening = false;
 	return node;
 };
 
@@ -411,14 +396,17 @@ NavTree.prototype._transitionNodes = function (from, to, transition) {
 	from.item.emit('closing', from.params);
 	to.item.emit('opening', to.params);
 
+	function closeNode() {
+		self._closeNode(from, function () {
+			from.item.emit('closed', from.params);
+			self._openNode(to);
+			to.item.emit('opened', to.params);
+		});
+	}
 
 	return window.setTimeout(function () {
 		if (!transition) {
-			return self._closeNode(from, from.params, function () {
-				from.item.emit('closed', from.params);
-				self._openNode(to);
-				to.item.emit('opened', to.params);
-			});
+			return closeNode();
 		}
 
 		from.item.emit('moving');
@@ -427,14 +415,7 @@ NavTree.prototype._transitionNodes = function (from, to, transition) {
 		transition(from.item, to.item, function () {
 			from.item.emit('moved', from.params);
 			to.item.emit('moved', to.params);
-
-			window.setTimeout(function () {
-				self._closeNode(from, from.params, function () {
-					from.item.emit('closed', from.params);
-					self._openNode(to);
-					to.item.emit('opened', to.params);
-				});
-			}, 0);
+			window.setTimeout(closeNode, 0);
 		});
 
 	}, 0);
@@ -448,27 +429,27 @@ NavTree.prototype._transitionNodes = function (from, to, transition) {
  */
 
 NavTree.prototype.open = function (name, params, transition, cb) {
-	if (this.opening) {
+	if (this._opening) {
 		return false;
 	}
 
-	this.opening = true;
-	var from = this.stack.current();
+	this._opening = true;
+	var from = this._stack.current();
 	var to = this._createNode(name, params, cb);
 
 	if (to) {
 		this._transitionNodes(from, to, transition);
-		this.stack.add(to);
+		this._stack.add(to);
 		return true;
 	}
 
-	this.opening = false;
+	this._opening = false;
 	return false;
 };
 
 
 NavTree.prototype.enqueue = function (name, params, transition, cb) {
-	if (this.stack.isEmpty()) {
+	if (this._stack.isEmpty()) {
 		// nothing is active now, so we instantly open the node
 
 		this.open(name, params, transition, cb);
@@ -478,7 +459,7 @@ NavTree.prototype.enqueue = function (name, params, transition, cb) {
 		var node = this._createNode(name, params, cb);
 
 		if (node) {
-			this.nodeQueue.push({ node: node, transition: transition });
+			this._nodeQueue.push({ node: node, transition: transition });
 		}
 	}
 };
@@ -487,59 +468,63 @@ NavTree.prototype.enqueue = function (name, params, transition, cb) {
 NavTree.prototype.replace = function (name, params, transition, cb) {
 	// like open, but replaces the current node in the history stack
 	// ignores the queue
-	if (this.opening) {
+	if (this._opening) {
 		return false;
 	}
 
-	this.opening = true;
-	var from = this.stack.current();
+	this._opening = true;
+	var from = this._stack.current();
 	var to = this._createNode(name, params, cb);
 
 	if (to) {
 		this._transitionNodes(from, to, transition);
-		this.stack.replace(to);
+		this._stack.replace(to);
 		return true;
 	}
 
-	this.opening = false;
+	this._opening = false;
 	return false;
 };
 
 
 NavTree.prototype.back = function (transition) {
-	if (this.opening) {
+	if (this._opening) {
 		return false;
 	}
 
-	this.opening = true;
-	var from = this.stack.current();
-	var to = this.stack.back();
+	this._opening = true;
+	var from = this._stack.current();
+	var to = this._stack.back();
 
 	if (to) {
 		this._transitionNodes(from, to, transition);
+		this._opening = false;
 		return true;
+	} else {
+		this._stack.forward();
 	}
 
-	this.opening = false;
+	this._stack.forward();
+	this._opening = false;
 	return false;
 };
 
 
 NavTree.prototype.forward = function (transition) {
-	if (this.opening) {
+	if (this._opening) {
 		return false;
 	}
 
-	this.opening = true;
-	var from = this.stack.current();
-	var to = this.stack.forward();
+	this._opening = true;
+	var from = this._stack.current();
+	var to = this._stack.forward();
 
 	if (to) {
 		this._transitionNodes(from, to, transition);
 		return true;
 	}
 
-	this.opening = false;
+	this._opening = false;
 	return false;
 };
 
@@ -550,7 +535,7 @@ NavTree.prototype.close = function (response) {
 
 	// try to open a queued node
 
-	var queue = this.nodeQueue.shift();
+	var queue = this._nodeQueue.shift();
 
 	if (queue) {
 
@@ -559,27 +544,34 @@ NavTree.prototype.close = function (response) {
 	} else {
 		// there was no queued node, so we execute a back() request
 
+		this._response = response;
 		var wentBack = this.back();
 
 		// drop everything after the current node (if there is no current node, it will just clear all)
 
-		this.stack.clearFuture();
+		this._stack.clearFuture();
 
-		if (!wentBack) {
-			var self = this;
 
-			// if there was no node to go back to, the navTree can be considered empty
-
-			this._closeCurrentNode(response, function () {
-
-				if (self.cbCollapse) {
-					// call the collapse callback
-
-					self.cbCollapse();
-				}
-			});
+		if (wentBack) {
+			return;
 		}
+
+		// if there was no node to go back to, the navTree can be considered empty
+
+		var currentNode = this._stack.current();
+
+		if (!currentNode || !currentNode.item) {
+			return;
+		}
+
+		this._stack.clear();
+
+		currentNode.item.emit('closing', currentNode.params);
+		this._closeNode(currentNode, function () {
+			currentNode.item.emit('closed', currentNode.params);
+		});
 	}
+
 };
 
 
@@ -587,5 +579,5 @@ NavTree.prototype.clearHistory = function () {
 	// cleanup function to be called whenever hitting a point
 	// where no back-option is available, like a main-screen.
 
-	this.stack.resetToCurrent();
+	this._stack.resetToCurrent();
 };
