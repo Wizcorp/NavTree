@@ -438,8 +438,8 @@ NavTree.prototype.open = function (name, params, transition, cb) {
 	var to = this._createNode(name, params, cb);
 
 	if (to) {
-		this._transitionNodes(from, to, transition);
 		this._stack.add(to);
+		this._transitionNodes(from, to, transition);
 		return true;
 	}
 
@@ -477,8 +477,8 @@ NavTree.prototype.replace = function (name, params, transition, cb) {
 	var to = this._createNode(name, params, cb);
 
 	if (to) {
-		this._transitionNodes(from, to, transition);
 		this._stack.replace(to);
+		this._transitionNodes(from, to, transition);
 		return true;
 	}
 

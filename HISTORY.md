@@ -1,5 +1,11 @@
 # Release history
 
+## v0.4.3
+
+### Get stack when you open
+The stack was not up to date when listening for the event `'open'`.
+
+
 ## v0.4.2
 
 ### Please call me back
