@@ -1,5 +1,11 @@
 # Release history
 
+## v0.4.4
+
+### Dependencies update
+Updated `Wizcorp/events` to v0.1.3
+
+
 ## v0.4.3
 
 ### Get stack when you open
